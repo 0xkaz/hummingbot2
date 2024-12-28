@@ -1,10 +1,29 @@
 # Set the base image
-FROM continuumio/miniconda3:latest AS builder
+# FROM continuumio/miniconda3:latest AS builder
+FROM continuumio/miniconda3:23.5.2-0-alpine AS builder
 
 # Install system dependencies
-RUN apt-get update && \
-    apt-get install -y sudo libusb-1.0 gcc g++ python3-dev && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && \
+#     apt-get install -y sudo libusb-1.0 gcc g++ python3-dev && \
+#     rm -rf /var/lib/apt/lists/*
+RUN apk update
+RUN apk upgrade
+
+# Install system dependencies
+RUN apk add --no-cache \
+    sudo \
+    git \
+    libusb \
+    g++ \
+    python3-dev \
+    python3 \
+    gcc \
+    linux-headers \
+    musl-dev \
+    make
+
+RUN pip3 install numpy
+RUN pip3 install cython
 
 WORKDIR /home/hummingbot
 
@@ -34,7 +53,24 @@ RUN python3 setup.py build_ext --inplace -j 8 && \
 
 
 # Build final image using artifacts from builder
-FROM continuumio/miniconda3:latest AS release
+# FROM continuumio/miniconda3:latest AS release
+FROM continuumio/miniconda3:23.5.2-0-alpine AS release
+
+
+RUN apk update && apk upgrade && \
+    apk add --no-cache \
+    g++ \
+    python3-dev \
+    bash \
+    zsh \
+    gcc \
+    git \
+    sudo \
+    libusb \
+    linux-headers \
+    musl-dev \
+    make
+
 
 # Dockerfile author / maintainer
 LABEL maintainer="Fede Cardoso @dardonacci <federico@hummingbot.org>"
@@ -55,9 +91,9 @@ ENV BUILD_DATE=${DATE}
 ENV INSTALLATION_TYPE=docker
 
 # Install system dependencies
-RUN apt-get update && \
-    apt-get install -y sudo libusb-1.0 && \
-    rm -rf /var/lib/apt/lists/*
+# RUN apt-get update && \
+#     apt-get install -y sudo libusb-1.0 && \
+#     rm -rf /var/lib/apt/lists/*
 
 # Create mount points
 RUN mkdir -p /home/hummingbot/conf /home/hummingbot/conf/connectors /home/hummingbot/conf/strategies /home/hummingbot/conf/controllers /home/hummingbot/conf/scripts /home/hummingbot/logs /home/hummingbot/data /home/hummingbot/certs /home/hummingbot/scripts /home/hummingbot/controllers

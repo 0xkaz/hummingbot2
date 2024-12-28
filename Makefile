@@ -34,8 +34,23 @@ development-diff-cover:
 	coverage xml
 	diff-cover --compare-branch=origin/development coverage.xml
 
+# docker:
+# 	git clean -xdf && make clean && docker build -t hummingbot/hummingbot${TAG} -f Dockerfile .
+
 docker:
-	git clean -xdf && make clean && docker build -t hummingbot/hummingbot${TAG} -f Dockerfile .
+	# git clean -xdf && make clean
+	# docker build  --platform linux/amd64 -t rakd/hummingbot2 -f Dockerfile .
+	# git clean -xdf && 
+	make clean && docker build  --platform linux/amd64 -t rakd/hummingbot2${TAG} -f Dockerfile .
+	docker tag 	rakd/hummingbot2${TAG} ghcr.io/0xkaz/hummingbot2${TAG}
+
+dockerpush: docker
+	docker push rakd/hummingbot2${TAG}
+	
+dockerpush2: docker
+	echo $CR_PAT | docker login ghcr.io -u $GUSERNAME --password-stdin
+	docker push ghcr.io/0xkaz/hummingbot2${TAG}
+
 
 clean:
 	./clean
